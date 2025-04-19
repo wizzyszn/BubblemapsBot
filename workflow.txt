@@ -1,0 +1,10 @@
+// Collect token address
+// Generate bubble maps for this token address
+//Return the screenshot of the generated bubble maps for this token address
+// Provide relevant token informations such as:
+-> Market Cap
+-> Price
+-> Volume
+-> Decentralization score
+-> .........
+
