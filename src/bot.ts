@@ -1,32 +1,72 @@
-import { Telegraf } from 'telegraf';
-import fs from 'fs';
-import { isBubbleMapAvailable, generateBubbleMapScreenshot } from './bubblemaps';
-import dotenv from "dotenv"
-dotenv.config()
+import { Telegraf } from "telegraf";
+import { Alchemy, Network } from "alchemy-sdk";
+import fs from "fs";
+import {
+  isBubbleMapAvailable,
+  generateBubbleMapScreenshot,
+} from "./bubblemaps";
+import dotenv from "dotenv";
+import generateBubbleMaps from "./commands/generateBubbleMaps";
+import marketCap from "./commands/MarketCap";
+import decentralizationScore from "./commands/decentralizationScore";
+import tokenInfo from "./commands/token";
+import help from "./commands/help";
+import path from "path"
+dotenv.config();
 const bot = new Telegraf(process.env.BOT_TOKEN as string);
+export const chainMapper: Record<string, Network> = {
+  eth: Network.ETH_MAINNET,
+  avx: Network.AVAX_MAINNET,
+  base: Network.BASE_MAINNET,
+  bnb: Network.BNB_MAINNET,
+};
+export type SupportedChain = keyof typeof chainMapper;
+export const AlchemyFunc = (chain: SupportedChain) => {
+  const config = {
+    apiKey: process.env.ALCHEMY_API_KEY,
+    network: chainMapper[chain],
+  };
+  const alchemy = new Alchemy(config);
+  return alchemy;
+};
 
-bot.command('bmap', async (ctx) => {
-  console.log("bmap command received!");
-  const chain = 'bsc';
-  const token = '0x603c7f932ed1fc6575303d8fb018fdcbb0f39a95';
+bot.command("start", async (ctx) => {
+  const startMessage = `
+🌟 **Welcome to Crypto Bot!** 🌟  
+*Meet CryptoByte, your guide to the crypto universe!*
 
-  try {
-    const available = await isBubbleMapAvailable(chain, token);
-    console.log("availability:", available)
-    if (!available) {
-      return ctx.reply('❌ This bubble map is not available yet.');
-    }
+Dive into the world of cryptocurrency with powerful tools at your fingertips! Here's what CryptoByte can help you explore:
 
-    await ctx.reply('🧠 Generating bubble map...');
+🔹 **Visualize Token Activity**  
+Create stunning *bubble maps* to see token movements on any blockchain.
 
-    const screenshotPath = await generateBubbleMapScreenshot(chain, token);
-    await ctx.replyWithPhoto({ source: fs.createReadStream(screenshotPath) });
-  } catch (err) {
-    console.error(err);
-    ctx.reply('⚠️ An error occurred while generating the bubble map.');
-  }
+🔹 **Track Market Trends**  
+Check the *market capitalization* of your favorite coins by name or symbol.
+
+🔹 **Assess Network Health**  
+Get *decentralization scores* to evaluate token networks.
+
+🔹 **Dive Deep into Tokens**  
+Access detailed *token info* using chain and contract addresses.
+
+🚀 **Get Started with CryptoByte!**  
+Type **/help** to view all commands and their syntax. Try something like **/mcap BTC** to kick things off!
+
+*Your crypto journey starts here!* 🚀
+  `;
+
+  // Construct the absolute path to the image using __dirname
+  const imagePath = path.join(__dirname,"..", 'public', 'assets', 'image.jpg');
+
+  // Send the image using the local file path
+  await ctx.replyWithPhoto({ source: imagePath });
+  await ctx.reply(startMessage);
 });
-
+bot.command("bmap", generateBubbleMaps);
+bot.command("mcap", marketCap);
+bot.command("dexscore", decentralizationScore);
+bot.command("token", tokenInfo);
+bot.command("help", help);
 bot.launch().then(() => {
-  console.log('Bot is up and running!');
+  console.log("Bot is up and running!");
 });
