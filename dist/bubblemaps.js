@@ -69,8 +69,6 @@ async function generateBubbleMapScreenshot(chain, token) {
         console.log("Launching browser...");
         browser = await puppeteer_1.default.launch({
             headless: true,
-            executablePath: process.env.PUPPETEER_EXECUTABLE_PATH ||
-                "/opt/render/.cache/puppeteer/chrome/linux-135.0.7049.84/chrome",
             args: [
                 "--no-sandbox",
                 "--disable-setuid-sandbox",
