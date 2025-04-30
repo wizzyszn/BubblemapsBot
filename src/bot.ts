@@ -8,9 +8,16 @@ import tokenInfo from "./commands/token";
 import help from "./commands/help";
 import path from "path";
 import express from "express";
+import { Request, Response, NextFunction } from "express";
 
 dotenv.config();
 const bot = new Telegraf(process.env.BOT_TOKEN as string);
+
+// Error handling for bot
+bot.catch((err, ctx) => {
+  console.error(`Error for ${ctx.updateType}`, err);
+  ctx.reply("Oops, something went wrong! Please try again later.");
+});
 
 export const chainMapper: Record<string, Network> = {
   eth: Network.ETH_MAINNET,
@@ -67,23 +74,46 @@ bot.command("help", help);
 const app = express();
 app.use(express.json());
 
-// Set webhook endpoint (change '/secret-path' to something unique)
+// Set webhook endpoint
 const WEBHOOK_PATH = `/bot${process.env.BOT_TOKEN}`;
 app.use(WEBHOOK_PATH, bot.webhookCallback(WEBHOOK_PATH));
-app.use(WEBHOOK_PATH + "/", bot.webhookCallback(WEBHOOK_PATH));
 
-// Optional: health check endpoint
+// Health check endpoint
 app.get("/", (req, res) => {
   res.send("Crypto Bot server is running!");
 });
+
+// Express error middleware
+interface ErrorMiddleware {
+  (err: Error, req: Request, res: Response, next: NextFunction): void;
+}
+
+const errorMiddleware: ErrorMiddleware = (err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).send("Server error");
+};
+
+app.use(errorMiddleware);
 
 // Start server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, async () => {
   console.log(`Server running on port ${PORT}`);
 
-  // Set webhook with Telegram (run this once, or automate)
+  // Set webhook with Telegram
   const webhookUrl = `${process.env.WEBHOOK_DOMAIN}${WEBHOOK_PATH}`;
-  await bot.telegram.setWebhook(webhookUrl);
-  console.log(`Webhook set to: ${webhookUrl}`);
+  const currentWebhook = await bot.telegram.getWebhookInfo();
+  if (!currentWebhook.url) {
+    await bot.telegram.setWebhook(webhookUrl);
+    console.log(`Webhook set to: ${webhookUrl}`);
+  } else {
+    console.log(`Webhook already set to: ${currentWebhook.url}`);
+  }
+});
+
+// Graceful shutdown
+process.on("SIGTERM", async () => {
+  console.log("Shutting down...");
+  await bot.telegram.deleteWebhook();
+  process.exit(0);
 });
