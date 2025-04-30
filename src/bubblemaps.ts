@@ -5,6 +5,25 @@ import path from 'path';
 import axios from 'axios';
 import { createServer } from 'http';
 import portfinder from 'portfinder';
+function logBrowserInfo() {
+  try {
+    const browserPath = puppeteer.executablePath();
+    console.log(`Browser executable path: ${browserPath}`);
+    
+    if (fs.existsSync(browserPath)) {
+      console.log('Browser executable exists!');
+      
+      // Log file size and permissions
+      const stats = fs.statSync(browserPath);
+      console.log(`File size: ${stats.size} bytes`);
+      console.log(`File permissions: ${stats.mode.toString(8)}`);
+    } else {
+      console.log('Browser executable does not exist!');
+    }
+  } catch (error) {
+    console.error('Error checking browser:', error);
+  }
+}
 
 /**
  * Check whether the bubble map is available.
@@ -20,6 +39,7 @@ export async function isBubbleMapAvailable(chain: string, token: string): Promis
  * Generate a screenshot of the bubble map using a fixed 1920×1080 resolution.
  */
 export async function generateBubbleMapScreenshot(chain: string, token: string): Promise<string> {
+  logBrowserInfo();
   let server: http.Server | undefined;
   let browser: Browser | undefined;
   const htmlPath = path.join(__dirname, 'temp-bmap.html');
@@ -70,6 +90,7 @@ export async function generateBubbleMapScreenshot(chain: string, token: string):
     });
 
     // Launch Puppeteer
+    console.log('Launching browser...');
     browser = await puppeteer.launch({
       headless: true,
       args: [
@@ -77,10 +98,11 @@ export async function generateBubbleMapScreenshot(chain: string, token: string):
         '--disable-setuid-sandbox',
         '--disable-dev-shm-usage',
         '--disable-gpu',
-        '--disable-features=AudioServiceOutOfProcess',
-        '--disable-web-security'
+        '--single-process',
+        '--no-zygote'
       ]
     });
+    console.log('Browser launched successfully!');
     const page = await browser.newPage();
 
     // Set viewport

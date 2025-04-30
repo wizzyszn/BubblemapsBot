@@ -11,6 +11,25 @@ const path_1 = __importDefault(require("path"));
 const axios_1 = __importDefault(require("axios"));
 const http_1 = require("http");
 const portfinder_1 = __importDefault(require("portfinder"));
+function logBrowserInfo() {
+    try {
+        const browserPath = puppeteer_1.default.executablePath();
+        console.log(`Browser executable path: ${browserPath}`);
+        if (fs_1.default.existsSync(browserPath)) {
+            console.log('Browser executable exists!');
+            // Log file size and permissions
+            const stats = fs_1.default.statSync(browserPath);
+            console.log(`File size: ${stats.size} bytes`);
+            console.log(`File permissions: ${stats.mode.toString(8)}`);
+        }
+        else {
+            console.log('Browser executable does not exist!');
+        }
+    }
+    catch (error) {
+        console.error('Error checking browser:', error);
+    }
+}
 /**
  * Check whether the bubble map is available.
  */
@@ -24,6 +43,7 @@ async function isBubbleMapAvailable(chain, token) {
  * Generate a screenshot of the bubble map using a fixed 1920×1080 resolution.
  */
 async function generateBubbleMapScreenshot(chain, token) {
+    logBrowserInfo();
     let server;
     let browser;
     const htmlPath = path_1.default.join(__dirname, 'temp-bmap.html');
@@ -67,6 +87,7 @@ async function generateBubbleMapScreenshot(chain, token) {
             setTimeout(() => reject(new Error('Server failed to start within 10 seconds')), 10000);
         });
         // Launch Puppeteer
+        console.log('Launching browser...');
         browser = await puppeteer_1.default.launch({
             headless: true,
             args: [
@@ -74,10 +95,11 @@ async function generateBubbleMapScreenshot(chain, token) {
                 '--disable-setuid-sandbox',
                 '--disable-dev-shm-usage',
                 '--disable-gpu',
-                '--disable-features=AudioServiceOutOfProcess',
-                '--disable-web-security'
+                '--single-process',
+                '--no-zygote'
             ]
         });
+        console.log('Browser launched successfully!');
         const page = await browser.newPage();
         // Set viewport
         await page.setViewport({ width: 1920, height: 1080 });
