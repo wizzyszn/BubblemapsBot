@@ -79,6 +79,11 @@ app.use(WEBHOOK_PATH, bot.webhookCallback(WEBHOOK_PATH));
 app.get("/", (req, res) => {
     res.send("Crypto Bot server is running!");
 });
+// Debug all unmatched routes
+app.use((req, res) => {
+    console.log(`Unmatched route: ${req.method} ${req.url}`);
+    res.status(404).send("Not Found");
+});
 const errorMiddleware = (err, req, res, next) => {
     console.error(err.stack);
     res.status(500).send("Server error");
@@ -90,6 +95,7 @@ app.listen(PORT, async () => {
     console.log(`Server running on port ${PORT}`);
     // Set webhook with Telegram
     const webhookUrl = `${process.env.WEBHOOK_DOMAIN}${WEBHOOK_PATH}`;
+    console.log(`Setting webhook to: ${webhookUrl}`); // Debug
     const currentWebhook = await bot.telegram.getWebhookInfo();
     if (!currentWebhook.url) {
         await bot.telegram.setWebhook(webhookUrl);
