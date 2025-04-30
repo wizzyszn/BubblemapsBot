@@ -6,25 +6,6 @@ import axios from "axios";
 import { createServer } from "http";
 import portfinder from "portfinder";
 
-function logBrowserInfo() {
-  try {
-    const browserPath =
-      process.env.PUPPETEER_EXECUTABLE_PATH || "/usr/bin/chromium";
-    console.log(`Browser executable path: ${browserPath}`);
-
-    if (fs.existsSync(browserPath)) {
-      console.log("Browser executable exists!");
-      const stats = fs.statSync(browserPath);
-      console.log(`File size: ${stats.size} bytes`);
-      console.log(`File permissions: ${stats.mode.toString(8)}`);
-    } else {
-      console.log("Browser executable does not exist!");
-    }
-  } catch (error) {
-    console.error("Error checking browser:", error);
-  }
-}
-
 /**
  * Check whether the bubble map is available.
  */
@@ -48,7 +29,6 @@ export async function generateBubbleMapScreenshot(
   chain: string,
   token: string
 ): Promise<string> {
-  logBrowserInfo();
   let server: http.Server | undefined;
   let browser: Browser | undefined;
   const htmlPath = path.join(process.cwd(), "temp-bmap.html");
@@ -100,11 +80,10 @@ export async function generateBubbleMapScreenshot(
       );
     });
 
-    // Launch Puppeteer with proper configuration
+    // Launch Puppeteer with default configuration (Chromium auto-managed)
     console.log("Launching browser...");
     browser = await puppeteer.launch({
       headless: true,
-      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH,
       args: [
         "--no-sandbox",
         "--disable-setuid-sandbox",

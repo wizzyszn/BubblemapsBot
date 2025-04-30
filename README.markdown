@@ -20,6 +20,7 @@
   - [Step-by-Step Installation](#step-by-step-installation)
   - [Testing the Bot](#testing-the-bot)
   - [Troubleshooting](#troubleshooting)
+- [Deployment on Render](#deployment-on-render)
 - [Usage Notes](#usage-notes)
 
 # **BubbleMapsBot**
@@ -269,6 +270,25 @@ BubbleMapsBot is a Telegram bot designed to provide users with comprehensive cry
 - **API Errors**: Verify API keys in `.env` and ensure you have not exceeded rate limits.
 - **Bubble Map Issues**: Ensure the `bubblemaps` module is correctly implemented and the BubbleMaps API is accessible.
 - **Logs**: Check console logs for detailed error messages.
+
+## Deployment on Render
+
+You can easily deploy BubbleMapsBot to [Render](https://render.com/) as a web service. Render will automatically install all dependencies, including Puppeteer and Chromium, so no extra configuration is needed.
+
+**Steps:**
+
+1. **Connect your repository** to Render and create a new Web Service.
+2. **Set the build and start commands:**
+   - **Build command:** `npm run build`
+   - **Start command:** `npm start`
+3. **Set environment variables** in the Render dashboard (e.g., `TELEGRAM_BOT_TOKEN`, `ALCHEMY_API_KEY`, etc.)
+4. **No extra postinstall script is needed.** Puppeteer will automatically download a compatible version of Chromium during install.
+5. **Optional:** If you want to reduce build size, you can use a custom Dockerfile and install only the necessary Chromium dependencies, but this is not required for most use cases.
+
+**Note:**
+
+- The code is already configured for production and will work out-of-the-box on Render. No changes to Puppeteer configuration or browser path are needed.
+- If you encounter any issues with Chromium on Render, ensure you are using the `puppeteer` package (not `puppeteer-core`).
 
 ## Usage Notes
 
