@@ -72,9 +72,13 @@ bot.command("help", help_1.default);
 // --- Express server and webhook setup ---
 const app = (0, express_1.default)();
 app.use(express_1.default.json());
-// Set webhook endpoint
-const WEBHOOK_PATH = `/bot${process.env.BOT_TOKEN}`;
-app.use(WEBHOOK_PATH, bot.webhookCallback(WEBHOOK_PATH));
+// FIXED: Set webhook endpoint correctly
+const BOT_TOKEN = process.env.BOT_TOKEN;
+const WEBHOOK_PATH = `/bot${BOT_TOKEN}`;
+// Use the Telegraf webhook callback correctly
+app.post(WEBHOOK_PATH, (req, res) => {
+    bot.handleUpdate(req.body, res);
+});
 // Health check endpoint
 app.get("/", (req, res) => {
     res.send("Crypto Bot server is running!");
@@ -96,13 +100,24 @@ app.listen(PORT, async () => {
     // Set webhook with Telegram
     const webhookUrl = `${process.env.WEBHOOK_DOMAIN}${WEBHOOK_PATH}`;
     console.log(`Setting webhook to: ${webhookUrl}`); // Debug
-    const currentWebhook = await bot.telegram.getWebhookInfo();
-    if (!currentWebhook.url) {
-        await bot.telegram.setWebhook(webhookUrl);
-        console.log(`Webhook set to: ${webhookUrl}`);
+    try {
+        const currentWebhook = await bot.telegram.getWebhookInfo();
+        if (!currentWebhook.url) {
+            await bot.telegram.setWebhook(webhookUrl);
+            console.log(`Webhook set to: ${webhookUrl}`);
+        }
+        else {
+            console.log(`Webhook already set to: ${currentWebhook.url}`);
+            // OPTIONAL: Force update webhook if URL doesn't match exactly
+            if (currentWebhook.url !== webhookUrl) {
+                console.log(`Updating webhook from ${currentWebhook.url} to ${webhookUrl}`);
+                await bot.telegram.setWebhook(webhookUrl);
+                console.log(`Webhook updated to: ${webhookUrl}`);
+            }
+        }
     }
-    else {
-        console.log(`Webhook already set to: ${currentWebhook.url}`);
+    catch (error) {
+        console.error("Error setting webhook:", error);
     }
 });
 // Graceful shutdown
