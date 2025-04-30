@@ -38,31 +38,30 @@ const AlchemyFunc = (chain) => {
 exports.AlchemyFunc = AlchemyFunc;
 bot.command("start", async (ctx) => {
     const startMessage = `
-🌟 **Welcome to Crypto Bot!** 🌟  
-*Meet CryptoByte, your guide to the crypto universe!*
+🌟 <b>Welcome to Crypto Bot!</b> 🌟
+<i>Meet CryptoByte, your guide to the crypto universe!</i>
 
 Dive into the world of cryptocurrency with powerful tools at your fingertips! Here's what CryptoByte can help you explore:
 
-🔹 **Visualize Token Activity**  
-Create stunning *bubble maps* to see token movements on any blockchain.
+🔹 <b>Visualize Token Activity</b>
+Create stunning bubble maps to see token movements on any blockchain.
 
-🔹 **Track Market Trends**  
-Check the *market capitalization* of your favorite coins by name or symbol.
+🔹 <b>Track Market Trends</b>
+Check the market capitalization of your favorite coins by name or symbol.
 
-🔹 **Assess Network Health**  
-Get *decentralization scores* to evaluate token networks.
+🔹 <b>Assess Network Health</b>
+Get decentralization scores to evaluate token networks.
 
-🔹 **Dive Deep into Tokens**  
-Access detailed *token info* using chain and contract addresses.
+🔹 <b>Dive Deep into Tokens</b>
+Access detailed token info using chain and contract addresses.
 
-🚀 **Get Started with CryptoByte!**  
-Type **/help** to view all commands and their syntax. Try something like **/mcap BTC** to kick things off!
+🚀 <b>Get Started with CryptoByte!</b>
+Type /help to view all commands and their syntax. Try something like /mcap BTC to kick things off!
 
-*Your crypto journey starts here!* 🚀
-  `;
+<i>Your crypto journey starts here!</i> 🚀`;
     const imagePath = path_1.default.join(__dirname, "..", "public", "assets", "image.jpg");
     await ctx.replyWithPhoto({ source: imagePath });
-    await ctx.reply(startMessage);
+    await ctx.replyWithHTML(startMessage);
 });
 bot.command("bmap", generateBubbleMaps_1.default);
 bot.command("mcap", MarketCap_1.default);

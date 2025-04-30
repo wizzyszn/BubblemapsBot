@@ -14,7 +14,12 @@ const generateBubbleMaps = async (ctx: Context) => {
   const input = ctx.message.text.trim();
   const args = input.split(" ");
   if (args.length < 3) {
-    return ctx.reply("Incorrect usage ❌\n\nUsage: /bmap <chain> <token>");
+    return ctx.replyWithHTML(
+      "❌ <b>Incorrect usage</b>\n\n" +
+        "📝 <b>Usage:</b> /bmap <chain> <token>\n\n" +
+        "🔗 <b>Supported chains:</b> eth, bnb, avax, sol, ftm...\n" +
+        "🔍 <b>Example:</b> /bmap eth 0x1234..."
+    );
   }
   const token = args[2];
   const chain = args[1];

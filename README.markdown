@@ -1,5 +1,29 @@
 # **BubbleMapsBot**
 
+[![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://choosealicense.com/licenses/mit/)
+
+## Table of Contents
+
+- [Features](#features)
+  - [Market Capitalization](#1-market-capitalization-mcap)
+  - [Decentralization Score](#2-decentralization-score-dexscore)
+  - [Bubble Map Generation](#3-bubble-map-generation-bmap)
+  - [Token Information](#4-token-information-token)
+  - [Additional Features](#additional-features)
+- [Technology Used](#technology-used)
+  - [Core Technologies](#core-technologies)
+  - [APIs and Services](#apis-and-services)
+  - [Supported Blockchains](#supported-blockchains)
+- [Core Implementation Methodologies](#core-implementation-methodologies)
+- [Installation Guide](#installation-guide)
+  - [Prerequisites](#prerequisites)
+  - [Step-by-Step Installation](#step-by-step-installation)
+  - [Testing the Bot](#testing-the-bot)
+  - [Troubleshooting](#troubleshooting)
+- [Usage Notes](#usage-notes)
+
+# **BubbleMapsBot**
+
 BubbleMapsBot is a Telegram bot designed to provide users with comprehensive cryptocurrency and token information. It integrates with multiple APIs to fetch real-time data on market capitalization, token decentralization scores, bubble map visualizations in the form of screenshots, and detailed token metadata. The bot supports various blockchain networks and offers insights into token distribution and market performance.
 
 ## Features
@@ -161,6 +185,7 @@ BubbleMapsBot is a Telegram bot designed to provide users with comprehensive cry
    Required packages:
 
    - `telegraf`
+   - `express`
    - `axios`
    - `alchemy-sdk`
    - `ethers`
@@ -172,6 +197,8 @@ BubbleMapsBot is a Telegram bot designed to provide users with comprehensive cry
    TELEGRAM_BOT_TOKEN=your-telegram-bot-token
    ALCHEMY_API_KEY=your-alchemy-api-key
    ETHERSCAN_API_KEY=your-etherscan-api-key
+   WEBHOOK_DOMAIN=your-web-hook-domain
+   PORT=your-port
    ```
 
    Replace `your-telegram-bot-token`, `your-alchemy-api-key`, and `your-etherscan-api-key` with your actual keys.

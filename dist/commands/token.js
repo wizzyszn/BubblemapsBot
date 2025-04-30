@@ -98,7 +98,12 @@ const tokenInfo = async (ctx) => {
     const input = ctx.message.text.trim();
     const args = input.split(" ");
     if (args.length < 3) {
-        return ctx.reply("Incorrect usage ❌\n\nUsage: /token <chain> <contract_address>");
+        return ctx.replyWithHTML("❌ <b>Incorrect usage</b>\n\n" +
+            "📝 <b>Usage:</b> /token <chain> <contract_address>\n\n" +
+            "🔗 <b>Supported chains:</b> " +
+            supportedChains.join(", ") +
+            "\n" +
+            "💡 <b>Example:</b> /token eth 0x1234...");
     }
     const chain = args[1].toLowerCase();
     const contractAddress = args[2];
