@@ -70,6 +70,7 @@ app.use(express.json());
 // Set webhook endpoint (change '/secret-path' to something unique)
 const WEBHOOK_PATH = `/bot${process.env.BOT_TOKEN}`;
 app.use(WEBHOOK_PATH, bot.webhookCallback(WEBHOOK_PATH));
+app.use(WEBHOOK_PATH + "/", bot.webhookCallback(WEBHOOK_PATH));
 
 // Optional: health check endpoint
 app.get("/", (req, res) => {
