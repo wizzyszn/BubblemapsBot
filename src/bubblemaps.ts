@@ -71,8 +71,15 @@ export async function generateBubbleMapScreenshot(chain: string, token: string):
 
     // Launch Puppeteer
     browser = await puppeteer.launch({
-      headless: true, // Enable headless mode for better compatibility
-      args: ['--no-sandbox', '--disable-setuid-sandbox'], // Common args for stability
+      headless: true,
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-gpu',
+        '--disable-features=AudioServiceOutOfProcess',
+        '--disable-web-security'
+      ]
     });
     const page = await browser.newPage();
 
