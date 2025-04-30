@@ -77,7 +77,7 @@ async function generateBubbleMapScreenshot(chain, token) {
         // Load the locally served HTML page
         await page.goto(`http://localhost:${port}`, { waitUntil: 'networkidle0', timeout: 30000 });
         // Wait for iframe content to load
-        await new Promise(resolve => setTimeout(resolve, 10000));
+        await new Promise(resolve => setTimeout(resolve, 25000));
         // Take screenshot
         const screenshotPath = path_1.default.join(__dirname, 'bubblemap.png');
         await page.screenshot({ path: screenshotPath, fullPage: true });
