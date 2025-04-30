@@ -1,19 +1,17 @@
 import { Telegraf } from "telegraf";
 import { Alchemy, Network } from "alchemy-sdk";
-import fs from "fs";
-import {
-  isBubbleMapAvailable,
-  generateBubbleMapScreenshot,
-} from "./bubblemaps";
 import dotenv from "dotenv";
 import generateBubbleMaps from "./commands/generateBubbleMaps";
 import marketCap from "./commands/MarketCap";
 import decentralizationScore from "./commands/decentralizationScore";
 import tokenInfo from "./commands/token";
 import help from "./commands/help";
-import path from "path"
+import path from "path";
+import express from "express";
+
 dotenv.config();
 const bot = new Telegraf(process.env.BOT_TOKEN as string);
+
 export const chainMapper: Record<string, Network> = {
   eth: Network.ETH_MAINNET,
   avx: Network.AVAX_MAINNET,
@@ -55,10 +53,7 @@ Type **/help** to view all commands and their syntax. Try something like **/mcap
 *Your crypto journey starts here!* 🚀
   `;
 
-  // Construct the absolute path to the image using __dirname
-  const imagePath = path.join(__dirname,"..", 'public', 'assets', 'image.jpg');
-
-  // Send the image using the local file path
+  const imagePath = path.join(__dirname, "..", "public", "assets", "image.jpg");
   await ctx.replyWithPhoto({ source: imagePath });
   await ctx.reply(startMessage);
 });
@@ -67,6 +62,27 @@ bot.command("mcap", marketCap);
 bot.command("dexscore", decentralizationScore);
 bot.command("token", tokenInfo);
 bot.command("help", help);
-bot.launch().then(() => {
-  console.log("Bot is up and running!");
+
+// --- Express server and webhook setup ---
+const app = express();
+app.use(express.json());
+
+// Set webhook endpoint (change '/secret-path' to something unique)
+const WEBHOOK_PATH = `/bot${process.env.BOT_TOKEN}`;
+app.use(WEBHOOK_PATH, bot.webhookCallback(WEBHOOK_PATH));
+
+// Optional: health check endpoint
+app.get("/", (req, res) => {
+  res.send("Crypto Bot server is running!");
+});
+
+// Start server
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, async () => {
+  console.log(`Server running on port ${PORT}`);
+
+  // Set webhook with Telegram (run this once, or automate)
+  const webhookUrl = `${process.env.WEBHOOK_DOMAIN}${WEBHOOK_PATH}`;
+  await bot.telegram.setWebhook(webhookUrl);
+  console.log(`Webhook set to: ${webhookUrl}`);
 });
