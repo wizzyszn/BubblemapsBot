@@ -9,8 +9,6 @@ const puppeteer_1 = __importDefault(require("puppeteer"));
 const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
 const axios_1 = __importDefault(require("axios"));
-const http_1 = require("http");
-const portfinder_1 = __importDefault(require("portfinder"));
 /**
  * Check whether the bubble map is available.
  */
@@ -22,49 +20,19 @@ async function isBubbleMapAvailable(chain, token) {
 }
 /**
  * Generate a screenshot of the bubble map using a fixed 1920×1080 resolution.
+ * Modified for local testing: loads iframe URL directly, no local server.
  */
 async function generateBubbleMapScreenshot(chain, token) {
-    let server;
     let browser;
-    const htmlPath = path_1.default.join(process.cwd(), "temp-bmap.html");
+    // const htmlPath = path.join(process.cwd(), "temp-bmap.html"); // Not needed locally
     try {
         // Construct the Bubblemaps iframe URL
         const iframeUrl = `https://app.bubblemaps.io/${chain}/token/${token}?prevent_scroll_zoom&hide_context&small_text`;
-        // Create HTML content
-        const html = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <style>
-          html, body { margin: 0; padding: 0; }
-        </style>
-      </head>
-      <body>
-        <iframe src="${iframeUrl}" width="1920" height="1080" frameborder="0" style="border: none;"></iframe>
-      </body>
-      </html>
-    `;
-        // Write the HTML content to a temporary file
-        fs_1.default.writeFileSync(htmlPath, html);
+        // --- Local testing: skip HTML file and server ---
         // Find an available port starting from 3001
-        const port = await portfinder_1.default.getPortPromise({ port: 3001 });
+        // const port = await portfinder.getPortPromise({ port: 3001 });
         // Start the HTTP server
-        server = (0, http_1.createServer)((req, res) => {
-            fs_1.default.readFile(htmlPath, (err, data) => {
-                if (err) {
-                    res.writeHead(500);
-                    res.end("Error loading HTML");
-                    return;
-                }
-                res.writeHead(200, { "Content-Type": "text/html" });
-                res.end(data);
-            });
-        });
-        await new Promise((resolve, reject) => {
-            server.listen(port, resolve);
-            server.on("error", reject);
-            setTimeout(() => reject(new Error("Server failed to start within 10 seconds")), 10000);
-        });
+        // ...server code commented out...
         // Launch Puppeteer with default configuration (Chromium auto-managed)
         console.log("Launching browser...");
         browser = await puppeteer_1.default.launch({
@@ -82,15 +50,51 @@ async function generateBubbleMapScreenshot(chain, token) {
         const page = await browser.newPage();
         // Set viewport
         await page.setViewport({ width: 1920, height: 1080 });
-        // Load the locally served HTML page
-        await page.goto(`http://localhost:${port}`, {
-            waitUntil: "networkidle0",
-            timeout: 30000,
+        // Set a realistic user-agent and extra headers
+        await page.setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36");
+        await page.setExtraHTTPHeaders({
+            "accept-language": "en-US,en;q=0.9",
         });
-        // Wait for iframe content to load
-        await new Promise((resolve) => setTimeout(resolve, 25000));
-        // Take screenshot
-        const screenshotPath = path_1.default.join(process.cwd(), "bubblemap.png");
+        // Robust retry logic for page.goto and element wait
+        const maxAttempts = 3;
+        let attempt = 0;
+        let lastError = null;
+        let loaded = false;
+        const timeouts = [60000, 90000, 120000]; // Increase timeout per attempt
+        const selector = ".mapboxgl-canvas, canvas, svg, .map-container"; // Try common map selectors
+        while (attempt < maxAttempts && !loaded) {
+            try {
+                console.log(`Attempt ${attempt + 1} to load bubblemap page...`);
+                await page.goto(iframeUrl, {
+                    waitUntil: "load",
+                    timeout: timeouts[attempt],
+                });
+                // Wait for a map element to appear (up to 30s)
+                await page.waitForSelector(selector, { timeout: 30000 });
+                loaded = true;
+            }
+            catch (err) {
+                console.warn(`Navigation or selector wait failed on attempt ${attempt + 1}:`, err);
+                lastError = err;
+                // Exponential backoff before retrying
+                const backoff = 3000 * Math.pow(2, attempt);
+                console.log(`Waiting ${backoff / 1000}s before retrying...`);
+                await new Promise((resolve) => setTimeout(resolve, backoff));
+            }
+            attempt++;
+        }
+        if (!loaded) {
+            console.error("All attempts to load the bubblemap page or find the map element failed.");
+            throw lastError || new Error("Page did not load");
+        }
+        // Wait an additional 30 seconds to ensure the bubble map is fully rendered
+        await new Promise((resolve) => setTimeout(resolve, 30000));
+        // Use /tmp for Render or allow override via env
+        const screenshotDir = process.env.SCREENSHOT_DIR || "/tmp";
+        if (!fs_1.default.existsSync(screenshotDir)) {
+            fs_1.default.mkdirSync(screenshotDir, { recursive: true });
+        }
+        const screenshotPath = path_1.default.join(screenshotDir, "bubblemap.png");
         await page.screenshot({ path: screenshotPath, fullPage: true });
         return screenshotPath;
     }
@@ -103,20 +107,18 @@ async function generateBubbleMapScreenshot(chain, token) {
         if (browser) {
             await browser.close();
         }
-        if (server) {
-            await new Promise((resolve) => server.close(() => resolve()));
-        }
-        if (fs_1.default.existsSync(htmlPath)) {
-            fs_1.default.unlinkSync(htmlPath);
-        }
+        // if (fs.existsSync(htmlPath)) {
+        //   fs.unlinkSync(htmlPath);
+        // }
     }
 }
 // Handle process termination to ensure cleanup
-process.on("SIGINT", async () => {
-    console.log("Received SIGINT. Cleaning up...");
-    process.exit(0);
-});
-process.on("SIGTERM", async () => {
-    console.log("Received SIGTERM. Cleaning up...");
-    process.exit(0);
-});
+// process.on("SIGINT", async () => {
+//   console.log("Received SIGINT. Cleaning up...");
+//   process.exit(0);
+// });
+//
+// process.on("SIGTERM", async () => {
+//   console.log("Received SIGTERM. Cleaning up...");
+//   process.exit(0);
+// });

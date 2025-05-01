@@ -6,7 +6,7 @@
     "start": "node dist/bot.js",
     "dev": "nodemon --exec ts-node src/bot.ts",
     "build": "tsc",
-    "chrome" : "npm path && npm find",
+    "chrome": "npm path && npm find",
     "path": "node -e \"console.log(require('puppeteer').executablePath())\" && echo \"File exists.\" || echo \"File does not exist.\"",
     "find": "find / -name chrome | grep puppeteer | grep -v node_modules",
     "clean": "npm uninstall puppeteer-core && rmdir /s /q node_modules && del package-lock.json && npm install"
@@ -23,7 +23,7 @@
     "express": "^5.1.0",
     "node-cache": "^5.1.2",
     "portfinder": "^1.0.36",
-    "puppeteer": "^24.6.1",
+    "puppeteer": "^24.7.2",
     "telegraf": "^4.16.3"
   },
   "devDependencies": {

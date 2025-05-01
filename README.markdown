@@ -1,7 +1,8 @@
 # **BubbleMapsBot**
 
 [![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://choosealicense.com/licenses/mit/)
-
+## Demo Video
+[![Watch the demo](./public/assets/image.jpg)](https://youtu.be/8aQxEdw4SdY)
 ## Table of Contents
 
 - [Features](#features)

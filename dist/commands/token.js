@@ -95,7 +95,7 @@ const tokenInfo = async (ctx) => {
         await ctx.reply("Please enter a valid command.");
         return;
     }
-    const input = ctx.message.text.trim();
+    const input = ctx.message.text;
     const args = input.split(" ");
     if (args.length < 3) {
         return ctx.replyWithHTML("❌ <b>Incorrect usage</b>\n\n" +
@@ -353,16 +353,15 @@ const tokenInfo = async (ctx) => {
         }
         // Format response
         const response = `
-Chain: ${chain.toUpperCase()}
-Price (USD): $${price ? price.toFixed(4) : "N/A"}
-Market Cap: $${marketCap || "N/A"}
-24h Volume: $${volume || "N/A"}
-24h Price Change: ${priceChange24h ? priceChange24h + "%" : "N/A"}
-Decentralization Score: ${decentralizationData.score}/100
-Supply in CEXs: ${decentralizationData.percentInCexs}%
-Supply in Contracts: ${decentralizationData.percentInContracts}%
-Insights: ${insights.length > 0 ? insights.join(", ") : "No notable insights"}
-    `;
+🔗 <b>Chain:</b> ${chain.toUpperCase()}
+💰 <b>Price (USD):</b> $${price ? price.toFixed(4) : "N/A"}
+📊 <b>Market Cap:</b> $${marketCap || "N/A"}
+📈 <b>24h Volume:</b> $${volume || "N/A"}
+📉 <b>24h Price Change:</b> ${priceChange24h ? priceChange24h + "%" : "N/A"}
+🎯 <b>Decentralization Score:</b> ${decentralizationData.score}/100
+🏦 <b>Supply in CEXs:</b> ${decentralizationData.percentInCexs}%
+📝 <b>Supply in Contracts:</b> ${decentralizationData.percentInContracts}%
+💡 <b>Insights:</b> ${insights.length > 0 ? insights.join(", ") : "No notable insights"}`;
         // Send bubble map
         if (bubbleMapPath && fs_1.default.existsSync(bubbleMapPath)) {
             await ctx.replyWithPhoto({ source: fs_1.default.createReadStream(bubbleMapPath) });
@@ -373,7 +372,7 @@ Insights: ${insights.length > 0 ? insights.join(", ") : "No notable insights"}
             await ctx.reply("⚠️ Bubble map generated but file is missing.");
         }
         // Send token info
-        await ctx.reply(response);
+        await ctx.replyWithHTML(response);
     }
     catch (err) {
         console.error(`Error in tokenInfo for ${chain}:${contractAddress}:`, err);

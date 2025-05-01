@@ -19,7 +19,7 @@ const bot = new telegraf_1.Telegraf(process.env.BOT_TOKEN);
 // Error handling for bot
 bot.catch((err, ctx) => {
     console.error(`Error for ${ctx.updateType}`, err);
-    ctx.reply("Oops, something went wrong! Please try again later.");
+    ctx.reply("Oops, something went wrong! Please try again later. use /help for support");
 });
 exports.chainMapper = {
     eth: alchemy_sdk_1.Network.ETH_MAINNET,
@@ -38,10 +38,8 @@ const AlchemyFunc = (chain) => {
 exports.AlchemyFunc = AlchemyFunc;
 bot.command("start", async (ctx) => {
     const startMessage = `
-🌟 <b>Welcome to Crypto Bot!</b> 🌟
-<i>Meet CryptoByte, your guide to the crypto universe!</i>
-
-Dive into the world of cryptocurrency with powerful tools at your fingertips! Here's what CryptoByte can help you explore:
+🌟 <b>Welcome to BubblesMapsBot !</b> 🌟
+Dive into the world of cryptocurrency with powerful tools at your fingertips! Here's what BubblesMapsBot can help you explore:
 
 🔹 <b>Visualize Token Activity</b>
 Create stunning bubble maps to see token movements on any blockchain.
@@ -58,7 +56,7 @@ Access detailed token info using chain and contract addresses.
 🚀 <b>Get Started with CryptoByte!</b>
 Type /help to view all commands and their syntax. Try something like /mcap BTC to kick things off!
 
-<i>Your crypto journey starts here!</i> 🚀`;
+<i>Explore real-time cryptocurrency updates.</i> 🚀`;
     const imagePath = path_1.default.join(__dirname, "..", "public", "assets", "image.jpg");
     await ctx.replyWithPhoto({ source: imagePath });
     await ctx.replyWithHTML(startMessage);
@@ -68,6 +66,15 @@ bot.command("mcap", MarketCap_1.default);
 bot.command("dexscore", decentralizationScore_1.default);
 bot.command("token", token_1.default);
 bot.command("help", help_1.default);
+// Set up bot commands menu
+const commands = [
+    { command: "start", description: "🚀 Start the bot and get welcome message" },
+    { command: "bmap", description: "🗺️ Generate bubble map for token" },
+    { command: "mcap", description: "💰 Get token market capitalization" },
+    { command: "dexscore", description: "🎯 Check token decentralization score" },
+    { command: "token", description: "ℹ️ Get detailed token information" },
+    { command: "help", description: "❓ Show available commands and usage" },
+];
 // --- Express server and webhook setup ---
 const app = (0, express_1.default)();
 app.use(express_1.default.json());
@@ -92,7 +99,7 @@ const errorMiddleware = (err, req, res, next) => {
     res.status(500).send("Server error");
 };
 app.use(errorMiddleware);
-// Start server
+// --- Webhook setup ---
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, async () => {
     console.log(`Server running on port ${PORT}`);
@@ -122,6 +129,6 @@ app.listen(PORT, async () => {
 // Graceful shutdown
 process.on("SIGTERM", async () => {
     console.log("Shutting down...");
-    await bot.telegram.deleteWebhook();
+    // await bot.telegram.deleteWebhook(); // Not needed in polling mode
     process.exit(0);
 });

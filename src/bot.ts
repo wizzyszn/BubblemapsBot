@@ -16,7 +16,9 @@ const bot = new Telegraf(process.env.BOT_TOKEN as string);
 // Error handling for bot
 bot.catch((err, ctx) => {
   console.error(`Error for ${ctx.updateType}`, err);
-  ctx.reply("Oops, something went wrong! Please try again later.");
+  ctx.reply(
+    "Oops, something went wrong! Please try again later. use /help for support"
+  );
 });
 
 export const chainMapper: Record<string, Network> = {
@@ -37,10 +39,8 @@ export const AlchemyFunc = (chain: SupportedChain) => {
 
 bot.command("start", async (ctx) => {
   const startMessage = `
-🌟 <b>Welcome to Crypto Bot!</b> 🌟
-<i>Meet CryptoByte, your guide to the crypto universe!</i>
-
-Dive into the world of cryptocurrency with powerful tools at your fingertips! Here's what CryptoByte can help you explore:
+🌟 <b>Welcome to BubblesMapsBot !</b> 🌟
+Dive into the world of cryptocurrency with powerful tools at your fingertips! Here's what BubblesMapsBot can help you explore:
 
 🔹 <b>Visualize Token Activity</b>
 Create stunning bubble maps to see token movements on any blockchain.
@@ -57,7 +57,7 @@ Access detailed token info using chain and contract addresses.
 🚀 <b>Get Started with CryptoByte!</b>
 Type /help to view all commands and their syntax. Try something like /mcap BTC to kick things off!
 
-<i>Your crypto journey starts here!</i> 🚀`;
+<i>Explore real-time cryptocurrency updates.</i> 🚀`;
 
   const imagePath = path.join(__dirname, "..", "public", "assets", "image.jpg");
   await ctx.replyWithPhoto({ source: imagePath });
@@ -68,6 +68,16 @@ bot.command("mcap", marketCap);
 bot.command("dexscore", decentralizationScore);
 bot.command("token", tokenInfo);
 bot.command("help", help);
+
+// Set up bot commands menu
+const commands = [
+  { command: "start", description: "🚀 Start the bot and get welcome message" },
+  { command: "bmap", description: "🗺️ Generate bubble map for token" },
+  { command: "mcap", description: "💰 Get token market capitalization" },
+  { command: "dexscore", description: "🎯 Check token decentralization score" },
+  { command: "token", description: "ℹ️ Get detailed token information" },
+  { command: "help", description: "❓ Show available commands and usage" },
+];
 
 // --- Express server and webhook setup ---
 const app = express();
@@ -105,7 +115,7 @@ const errorMiddleware: ErrorMiddleware = (err, req, res, next) => {
 
 app.use(errorMiddleware);
 
-// Start server
+// --- Webhook setup ---
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, async () => {
   console.log(`Server running on port ${PORT}`);
@@ -138,6 +148,6 @@ app.listen(PORT, async () => {
 // Graceful shutdown
 process.on("SIGTERM", async () => {
   console.log("Shutting down...");
-  await bot.telegram.deleteWebhook();
+  // await bot.telegram.deleteWebhook(); // Not needed in polling mode
   process.exit(0);
 });
